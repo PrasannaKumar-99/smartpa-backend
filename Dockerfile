@@ -1,10 +1,10 @@
 # Multi-stage Dockerfile for Spring Boot Maven app on Render
-FROM eclipse-temurin:17-jre-alpine as builder
+FROM eclipse-temurin:17-jdk-alpine as builder
 
 WORKDIR /app
 COPY . .
 RUN apk add --no-cache maven openjdk17 && \
-    mvn clean package -DskipTests -Pprod
+mvn clean package -DskipTests
 
 FROM eclipse-temurin:17-jre-alpine
 
