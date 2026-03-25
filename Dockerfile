@@ -1,10 +1,12 @@
-# Multi-stage Dockerfile for Spring Boot Maven app on Render
-FROM eclipse-temurin:17-jdk-alpine as builder
+# Multi-stage Dockerfile for Spring Boot Maven on Render (JDK Fixed)
+FROM eclipse-temurin:17-jdk-alpine AS builder
 
 WORKDIR /app
-COPY . .
-RUN apk add --no-cache maven openjdk17 && \
-mvn clean package -DskipTests
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+COPY src ./src
+RUN mvn clean package -DskipTests
 
 FROM eclipse-temurin:17-jre-alpine
 
@@ -12,5 +14,5 @@ WORKDIR /app
 COPY --from=builder /app/target/*.jar app.jar
 
 EXPOSE $PORT
-ENV PORT=10000
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+ENTRYPOINT ["java", "-XX:InitialRAMPercentage=75.0", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]
