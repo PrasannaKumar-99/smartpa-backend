@@ -1,9 +1,9 @@
-# Port Binding Fix for Render Deployment - TODO
+# Fix Render DB URL Error - TODO
 
 ## Steps
-- [x] 1. Identify root cause: Dockerfile doesn't activate `prod` Spring profile
-- [x] 2. Identify invalid `EXPOSE $PORT` in Dockerfile (runtime env var not expanded)
-- [x] 3. Get user confirmation for the plan
-- [x] 4. Fix Dockerfile - remove invalid EXPOSE, add prod profile activation
-- [ ] 5. Rebuild and redeploy to Render
+- [x] 1. Analyze current config files and identify the issue (DATABASE_URL not in JDBC format)
+- [x] 2. Get user approval for the fix plan
+- [x] 3. Edit `application-prod.properties` with hardcoded JDBC URL and username
+- [ ] 4. Commit and push changes
+- [ ] 5. Clear Render cache and redeploy
 
