@@ -1,10 +1,9 @@
-# Database Configuration Fix - TODO
+# Port Binding Fix for Render Deployment - TODO
 
 ## Steps
-- [x] 1. Identify invalid PostgreSQL parameter (`createDatabaseIfNotExist=true`) in application.properties
-- [x] 2. Identify missing SSL configuration in application-prod.properties for Render
+- [x] 1. Identify root cause: Dockerfile doesn't activate `prod` Spring profile
+- [x] 2. Identify invalid `EXPOSE $PORT` in Dockerfile (runtime env var not expanded)
 - [x] 3. Get user confirmation for the plan
-- [x] 4. Fix application.properties - remove invalid parameter
-- [x] 5. Fix application-prod.properties - add sslmode=require and align credentials
-- [x] 6. Verify changes compile/config load correctly
+- [x] 4. Fix Dockerfile - remove invalid EXPOSE, add prod profile activation
+- [ ] 5. Rebuild and redeploy to Render
 
