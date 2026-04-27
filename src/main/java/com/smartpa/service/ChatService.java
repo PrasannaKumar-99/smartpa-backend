@@ -114,6 +114,6 @@ public class ChatService {
     }
 
     public void clearHistory(Long userId) {
-        chatRepo.deleteAll(chatRepo.findByUserIdOrderByTimestampDesc(userId));
+        chatRepo.deleteAllByUserId(userId);
     }
 }

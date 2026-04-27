@@ -3,7 +3,14 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
-@Entity @Table(name = "tasks")
+@Entity
+@Table(name = "tasks", indexes = {
+    @Index(name = "idx_task_user_id", columnList = "user_id"),
+    @Index(name = "idx_task_status", columnList = "status"),
+    @Index(name = "idx_task_priority", columnList = "priority"),
+    @Index(name = "idx_task_created_at", columnList = "created_at"),
+    @Index(name = "idx_task_reminder_time", columnList = "reminder_time")
+})
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
 public class Task {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

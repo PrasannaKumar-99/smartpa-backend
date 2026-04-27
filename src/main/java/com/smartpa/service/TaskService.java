@@ -8,6 +8,8 @@ import com.smartpa.model.User;
 import com.smartpa.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -22,6 +24,7 @@ public class TaskService {
     private final ChatHistoryRepository chatRepo;
     private final NoteRepository noteRepo;
 
+    @CacheEvict(value = {"taskStats", "userActivity"}, key = "#userId")
     public TaskResponse createTask(TaskRequest req, Long userId) {
         User user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         return toRes(taskRepo.save(Task.builder()
@@ -35,6 +38,7 @@ public class TaskService {
         return taskRepo.findByUserIdOrderByCreatedAtDesc(userId).stream().map(this::toRes).collect(Collectors.toList());
     }
 
+    @CacheEvict(value = {"taskStats", "userActivity"}, key = "#userId")
     public TaskResponse updateTask(Long id, TaskRequest req, Long userId) {
         Task t = owned(id, userId);
         t.setTitle(req.getTitle()); t.setDescription(req.getDescription());
@@ -43,6 +47,7 @@ public class TaskService {
         return toRes(taskRepo.save(t));
     }
 
+    @CacheEvict(value = {"taskStats", "userActivity"}, key = "#userId")
     public TaskResponse completeTask(Long id, String note, Long userId) {
         Task t = owned(id, userId);
         t.setStatus(TaskStatus.COMPLETED);
@@ -51,31 +56,34 @@ public class TaskService {
         return toRes(taskRepo.save(t));
     }
 
+    @CacheEvict(value = {"taskStats", "userActivity"}, key = "#userId")
     public TaskResponse reopenTask(Long id, Long userId) {
         Task t = owned(id, userId);
         t.setStatus(TaskStatus.PENDING); t.setCompletedAt(null); t.setCompletionNote(null);
         return toRes(taskRepo.save(t));
     }
 
+    @CacheEvict(value = {"taskStats", "userActivity"}, key = "#userId")
     public void cancelTask(Long id, Long userId) {
         Task t = owned(id, userId); t.setStatus(TaskStatus.CANCELLED); taskRepo.save(t);
     }
 
+    @CacheEvict(value = {"taskStats", "userActivity"}, key = "#userId")
     public void deleteTask(Long id, Long userId) { taskRepo.delete(owned(id, userId)); }
 
+    @Cacheable(value = "taskStats", key = "#userId")
     public StatsResponse getStats(Long userId) {
-        List<Task> all = taskRepo.findByUserIdOrderByCreatedAtDesc(userId);
-        long total     = all.size();
-        long pending   = all.stream().filter(t -> t.getStatus() == TaskStatus.PENDING).count();
-        long completed = all.stream().filter(t -> t.getStatus() == TaskStatus.COMPLETED).count();
-        long cancelled = all.stream().filter(t -> t.getStatus() == TaskStatus.CANCELLED).count();
-        long high      = all.stream().filter(t -> t.getPriority() == Priority.HIGH && t.getStatus() == TaskStatus.PENDING).count();
+        long total     = taskRepo.countByUserId(userId);
+        long pending   = taskRepo.countByUserIdAndStatus(userId, TaskStatus.PENDING);
+        long completed = taskRepo.countByUserIdAndStatus(userId, TaskStatus.COMPLETED);
+        long cancelled = taskRepo.countByUserIdAndStatus(userId, TaskStatus.CANCELLED);
+        long high      = taskRepo.countByUserIdAndPriorityAndStatus(userId, Priority.HIGH, TaskStatus.PENDING);
         double rate    = total > 0 ? Math.round((completed * 100.0) / total) : 0;
         return StatsResponse.builder()
                 .totalTasks(total).pendingTasks(pending).completedTasks(completed)
                 .cancelledTasks(cancelled).highPriorityTasks(high)
                 .totalChats(chatRepo.countByUserId(userId))
-                .totalNotes(noteRepo.findByUserIdOrderByUpdatedAtDesc(userId).size())
+                .totalNotes(noteRepo.countByUserId(userId))
                 .completionRate(rate).build();
     }
 

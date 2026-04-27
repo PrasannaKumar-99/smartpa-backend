@@ -5,7 +5,10 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "notes")
+@Table(name = "notes", indexes = {
+    @Index(name = "idx_note_user_id", columnList = "user_id"),
+    @Index(name = "idx_note_updated_at", columnList = "updated_at")
+})
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
 public class Note {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

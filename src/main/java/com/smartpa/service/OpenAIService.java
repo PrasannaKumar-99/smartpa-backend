@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -39,6 +42,11 @@ public class OpenAIService {
             + "2. For ALL other messages (greetings, questions, jokes, math, general chat) respond with plain text ONLY.\n"
             + "3. NEVER use JSON for normal conversation. NEVER add markdown code blocks.\n"
             + "4. Keep responses concise and friendly.";
+    }
+
+    @Async
+    public CompletableFuture<String> chatAsync(String userMessage, List<Map<String, String>> history) {
+        return CompletableFuture.completedFuture(chat(userMessage, history));
     }
 
     public String chat(String userMessage, List<Map<String, String>> history) {
